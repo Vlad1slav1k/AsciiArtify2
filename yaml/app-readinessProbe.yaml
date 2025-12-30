@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-with-readiness
+  labels:
+    app: my-webapp
+spec:
+  containers:
+  - name: web-container
+    image: nginx:latest
+    ports:
+    - containerPort: 80
+    
+    # The Readiness Probe configuration
+    readinessProbe:
+      httpGet:
+        path: /healthz
+        port: 80
+      initialDelaySeconds: 5  # How long to wait after start before probing
+      periodSeconds: 10       # How often to perform the probe
+      timeoutSeconds: 2       # How long to wait for a response
+      successThreshold: 1     # Minimum consecutive successes to be considered ready
+      failureThreshold: 3     # Minimum consecutive failures to be considered unready
