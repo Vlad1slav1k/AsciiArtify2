@@ -1,26 +1,28 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: app-two-containers
+  name: multi-container-app
+  labels:
+    app: logging-sidecar
 spec:
-  volumes:
-  - name: html
-    emptyDir: {}
   containers:
-  - name: 1st
-    image: nginx
+  # Container 1: The Main Application
+  - name: app-container
+    image: busybox
+    command: ["sh", "-c", "while true; do echo $(date) 'Processing data' >> /var/log/app.log; sleep 5; done"]
     volumeMounts:
-    - name: html
-      mountPath: /usr/share/nginx/html
-  - name: 2nd
-    image: debian
-    volumeMounts:
-    - name: html
-      mountPath: /html
-    command: ["/bin/sh", "-c"]
-    args:
-      - while true; do
-          date >> /html/index.html;
-          sleep 1;
-        done
+    - name: shared-logs
+      mountPath: /var/log
 
+  # Container 2: The Sidecar (Logger)
+  - name: sidecar-container
+    image: busybox
+    command: ["sh", "-c", "tail -f /var/log/app.log"]
+    volumeMounts:
+    - name: shared-logs
+      mountPath: /var/log
+
+  # Shared Volume that both containers can see
+  volumes:
+  - name: shared-logs
+    emptyDir: {}
