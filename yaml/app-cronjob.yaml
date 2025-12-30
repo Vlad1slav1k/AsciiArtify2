@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nightly-cleanup-job
+spec:
+  # The schedule follows standard Linux cron format: (Minute Hour Day Month Day-of-week)
+  schedule: "*/1 * * * *" 
+  concurrencyPolicy: Forbid  # Prevents a new job from starting if the old one is still running
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: worker
+            image: busybox:1.28
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - date; echo "Cleaning up temporary files... Done."
+          restartPolicy: OnFailure # Required for Jobs; can be OnFailure or Never
