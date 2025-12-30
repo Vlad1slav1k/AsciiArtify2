@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: data-migration-job
+spec:
+  # The job will be retried 4 times if the pod fails
+  backoffLimit: 4
+  # Optional: The job will be automatically deleted 100 seconds after it finishes
+  ttlSecondsAfterFinished: 100
+  template:
+    spec:
+      containers:
+      - name: processor
+        image: perl:5.34
+        command: ["perl",  "-Mbignum=bpi", "-wle", "print bpi(2000)"]
+      
+      # For Jobs, restartPolicy must be 'OnFailure' or 'Never'
+      # 'Always' is not allowed because Jobs are meant to end.
+      restartPolicy: OnFailure
